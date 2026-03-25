@@ -83,6 +83,23 @@ The application was developed by the [EvoMol-Lab](https://github.com/evomol-lab)
 
 ## <a name='RequirementsInstallation'></a>3. Requirements & Installation
 
+You can use docker by:
+
+```{sh}
+# build
+docker build -t slytherins .
+
+# run
+docker run -p 8501:8501 slytherins
+
+## Then open:
+http://localhost:8501
+
+# OR builded version:
+docker run -p 8501:8501 diegomscoelho/slytherins
+
+```
+
 To run SlytheRINs locally, you will need Python 3.x and the following packages:
 
 - streamlit
