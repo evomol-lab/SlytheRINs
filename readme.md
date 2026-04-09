@@ -1,6 +1,7 @@
 ![SlytheRINs-logo](SlytheRINs-logo.svg)
 
 # SlytheRINs: A tool for analyzing and comparing protein Residue Interaction Networks (RINs)
+[https://doi.org/10.64898/2026.02.26.708270](https://doi.org/10.64898/2026.02.26.708270)
 
 Laura Bradaschia Shimohara<sup>1</sup>, Matheus Assunção<sup>2</sup>, Marília V. A. de Almeida<sup>1</sup>, Ândrea Kelly Ribeiro dos Santos<sup>2</sup> and João Paulo M. S. Lima<sup>1</sup>.
 
