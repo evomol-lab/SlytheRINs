@@ -353,7 +353,7 @@ If you use SlytheRINs in your research, please consider citing it.
 
 Please visit the [EvoMol-Lab GitHub](http://github.com/evomol-lab) page or contact the developers for issues, suggestions, or contributions.
 
-##  <a name='Disclaimer'></a>10. Disclaimer
+##  <a name='Disclosure'></a>10. Disclosure
 
 The developer team used generative AI tools for the following tasks:
 
