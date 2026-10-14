@@ -1,53 +1,48 @@
-# Use lightweight Python image
-FROM python:3.10-slim
+# SlytheRINs: Residue Interaction Network analysis dashboard (Streamlit)
+#
+# Build: docker build -t evomol/slytherins .
+# Run:   docker run --rm -p 8501:8501 evomol/slytherins
+#        then open http://localhost:8501
+FROM python:3.12-slim-trixie
 
-# Avoid interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
+LABEL org.opencontainers.image.title="SlytheRINs" \
+      org.opencontainers.image.description="Residue Interaction Network (RIN) analysis dashboard" \
+      org.opencontainers.image.source="https://github.com/evomol-lab/SlytheRINs" \
+      org.opencontainers.image.vendor="EvoMol-Lab, BioME, UFRN"
 
-# Set working directory
-WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_ROOT_USER_ACTION=ignore \
+    STREAMLIT_SERVER_PORT=8501 \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
-# Install system dependencies (common for bio/plotting libs)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    gcc \
-    g++ \
-    git \
-    curl \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
+# Kaleido (>= 1) needs Chromium to export Plotly figures as PNG (plot downloads, PDF and ZIP reports).
+# fonts-liberation provides the fonts Chromium uses to draw the plot text.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends chromium fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy repo
-COPY . /app
+WORKDIR /app
 
-# Upgrade pip
-RUN pip install --no-cache-dir --upgrade pip
+# Installed before copying the app, so code changes don't trigger a reinstall of the dependencies
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-# Install Python dependencies
-# Prefer repo requirements if available
-RUN if [ -f requirements.txt ]; then \
-        pip install --no-cache-dir -r requirements.txt ; \
-    else \
-        pip install --no-cache-dir \
-            streamlit \
-            pandas \
-            numpy \
-            scipy \
-            matplotlib \
-            seaborn \
-            networkx \
-            plotly ; \
-    fi
+# Only the files the app reads at runtime
+COPY SlytheRINs.py SlytheRINs-logo2.png documentation.md ./
+COPY fonts/ fonts/
+COPY example_data/ example_data/
 
-# Expose Streamlit port
+RUN useradd --create-home --uid 1000 slytherins
+USER slytherins
+
 EXPOSE 8501
 
-# Streamlit config (avoid CORS / headless issues)
-ENV STREAMLIT_SERVER_PORT=8501
-ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')"
 
-# Default command (adjust entrypoint if needed)
-CMD ["streamlit", "run", "SlytheRINs.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "SlytheRINs.py"]

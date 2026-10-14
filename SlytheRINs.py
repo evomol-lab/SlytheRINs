@@ -19,6 +19,7 @@ import re # For regex operations (extracting UniProt ID from filename)
 from fpdf import FPDF # For PDF generation
 from datetime import datetime # For PDF timestamp
 import zipfile # For creating zip archives
+from functools import partial # For generating PNGs only when the download button is clicked
 
 #Keep the original colors on png download
 import plotly.io as pio
@@ -39,7 +40,7 @@ def convert_fig_to_png(fig, scale=2): # Added scale parameter
     except Exception as e:
         #Error message without kaleido
         st.error(f"Could not generate PNG. An error ocurred during image conversion. Error: {e}")
-        return io.BytesIO() #empty bytes to prevent crashing
+        raise # Lets the download button report the failure instead of saving an empty file
 
 # --- PDF Report Generation Class ---
 class PDF(FPDF):
@@ -160,7 +161,7 @@ class PDF(FPDF):
         self.section_title(title) 
         if caption: self.body_text(caption) 
         try:
-            img_bytes = fig.to_image(format="png", scale=1.5) 
+            img_bytes = convert_fig_to_png(fig, scale=2) # Same cached PNG reused by the ZIP archive and the PNG buttons
             img_file = io.BytesIO(img_bytes)
             page_width = self.w - 2 * self.l_margin 
             img_render_width = min(fig_width_mm, page_width) 
@@ -512,7 +513,7 @@ with tab1:
                 st.session_state.report_elements.append({"type": "df_text", "df": df_degree_variance_dl, "title": "Degree_Variance_Data", "part": 1}) 
                 dl_c1_1, dl_c2_1 = st.columns(2)
                 with dl_c1_1: st.download_button("Data (TSV)", convert_df_to_tsv(df_degree_variance_dl), "degree_variance.tsv", key="dl_deg_var_tsv_tab1")
-                with dl_c2_1: st.download_button("Plot (PNG)", convert_fig_to_png(fig_degree), "degree_variance_plot.png", key="dl_deg_var_png_tab1")
+                with dl_c2_1: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_degree), "degree_variance_plot.png", key="dl_deg_var_png_tab1")
             with col_var2:
                 caption_bet_var = "Variation in betweenness centrality of residues across conformations. High variance indicates residues that frequently change their role as bridges or bottlenecks."
                 st.write("##### Betweenness-centrality Variance"); st.caption(caption_bet_var)
@@ -522,7 +523,7 @@ with tab1:
                 st.session_state.report_elements.append({"type": "df_text", "df": df_betweenness_variance_dl, "title": "Betweenness_Variance_Data", "part": 1})
                 dl_c1_2, dl_c2_2 = st.columns(2)
                 with dl_c1_2: st.download_button("Data (TSV)", convert_df_to_tsv(df_betweenness_variance_dl), "betweenness_variance.tsv", key="dl_bet_var_tsv_tab1")
-                with dl_c2_2: st.download_button("Plot (PNG)", convert_fig_to_png(fig_betweenness), "betweenness_variance_plot.png", key="dl_bet_var_png_tab1")
+                with dl_c2_2: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_betweenness), "betweenness_variance_plot.png", key="dl_bet_var_png_tab1")
             
             col_var3, col_var4 = st.columns(2) 
             with col_var3:
@@ -534,7 +535,7 @@ with tab1:
                 st.session_state.report_elements.append({"type": "df_text", "df": df_clustering_variance_dl, "title": "Clustering_Coefficient_Variance_Data", "part": 1})
                 dl_c1_3, dl_c2_3 = st.columns(2)
                 with dl_c1_3: st.download_button("Data (TSV)", convert_df_to_tsv(df_clustering_variance_dl), "clustering_variance.tsv", key="dl_clust_var_tsv_tab1")
-                with dl_c2_3: st.download_button("Plot (PNG)", convert_fig_to_png(fig_clustering), "clustering_variance_plot.png", key="dl_clust_var_png_tab1")
+                with dl_c2_3: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_clustering), "clustering_variance_plot.png", key="dl_clust_var_png_tab1")
             with col_var4: 
                 caption_eig_var = "Variation in eigenvector centrality. High variance indicates residues whose influence (considering connections to other influential residues) changes significantly."
                 st.write("##### Eigenvector Centrality Variance"); st.caption(caption_eig_var)
@@ -544,7 +545,7 @@ with tab1:
                 st.session_state.report_elements.append({"type": "df_text", "df": df_eigenvector_variance_dl, "title": "Eigenvector_Variance_Data", "part": 1})
                 dl_c1_eig, dl_c2_eig = st.columns(2)
                 with dl_c1_eig: st.download_button("Data (TSV)", convert_df_to_tsv(df_eigenvector_variance_dl), "eigenvector_variance.tsv", key="dl_eig_var_tsv_tab1")
-                with dl_c2_eig: st.download_button("Plot (PNG)", convert_fig_to_png(fig_eigenvector_var), "eigenvector_variance_plot.png", key="dl_eig_var_png_tab1")
+                with dl_c2_eig: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_eigenvector_var), "eigenvector_variance_plot.png", key="dl_eig_var_png_tab1")
 
 
             st.markdown("#### Mean & STD Plots (Across All Networks)") 
@@ -558,7 +559,7 @@ with tab1:
                 st.session_state.report_elements.append({"type": "df_text", "df": df_triangle_counts_dl, "title": "Triangle_Counts_Data", "part": 1})
                 dl_c1_4, dl_c2_4 = st.columns(2)
                 with dl_c1_4: st.download_button("Data (TSV)", convert_df_to_tsv(df_triangle_counts_dl), "triangle_counts.tsv",key="dl_tri_counts_tsv_tab1")
-                with dl_c2_4: st.download_button("Plot (PNG)", convert_fig_to_png(fig_triangles), "triangle_counts_plot.png", key="dl_tri_counts_png_tab1")
+                with dl_c2_4: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_triangles), "triangle_counts_plot.png", key="dl_tri_counts_png_tab1")
             with col_mean_std2:
                 caption_deg_sd = "Display each residue’s average (mean) degree value and variability across distinct conformations. Shaded areas display the standard deviation, indicating residue connectivity stability."
                 st.write("##### Degree Values"); st.caption(caption_deg_sd)
@@ -568,7 +569,7 @@ with tab1:
                 st.session_state.report_elements.append({"type": "df_text", "df": df_mean_std_degree_dl, "title": "Mean & STD Degree Data", "part": 1})
                 dl_c1_5, dl_c2_5 = st.columns(2)
                 with dl_c1_5: st.download_button("Data (TSV)", convert_df_to_tsv(df_mean_std_degree_dl), "mean_std_degree.tsv", key="dl_mean_std_deg_tsv_tab1")
-                with dl_c2_5: st.download_button("Plot (PNG)", convert_fig_to_png(fig_degree_sd), "mean_std_degree_plot.png", key="dl_mean_std_deg_png_tab1")
+                with dl_c2_5: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_degree_sd), "mean_std_degree_plot.png", key="dl_mean_std_deg_png_tab1")
             with col_mean_std3: 
                 caption_eig_sd = "Displays each residue’s average (mean) eigenvector centrality and its variability. Eigenvector centrality measures a node's influence based on the centrality of its neighbors."
                 st.write("##### Eigenvector Centrality"); st.caption(caption_eig_sd)
@@ -582,7 +583,7 @@ with tab1:
                 st.session_state.report_elements.append({"type": "df_text", "df": df_mean_std_eigenvector_dl, "title": "Mean_STD_Eigenvector_Data", "part": 1})
                 dl_c1_eig_sd, dl_c2_eig_sd = st.columns(2)
                 with dl_c1_eig_sd: st.download_button("Data (TSV)", convert_df_to_tsv(df_mean_std_eigenvector_dl), "mean_std_eigenvector.tsv", key="dl_mean_std_eig_tsv_tab1")
-                with dl_c2_eig_sd: st.download_button("Plot (PNG)", convert_fig_to_png(fig_eigenvector_sd), "mean_std_eigenvector_plot.png", key="dl_mean_std_eig_png_tab1")
+                with dl_c2_eig_sd: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_eigenvector_sd), "mean_std_eigenvector_plot.png", key="dl_mean_std_eig_png_tab1")
 
             st.markdown("#### Top 10 Hubs (Mean Eigenvector Centrality)")
             mean_eigenvector_series = all_eigenvector_values.mean(axis=0)
@@ -629,7 +630,7 @@ with tab1:
                 st.session_state.report_elements.append({"type": "df_text", "df": df_degree_boxplot_data[['Residue', 'Degree', 'Residue_Raw']], "title": "Degree Boxplot Data", "part": 1})
                 col1_bp, col2_bp = st.columns(2) 
                 with col1_bp: st.download_button("Data (TSV)", convert_df_to_tsv(df_degree_boxplot_data[['Residue', 'Degree', 'Residue_Raw']]), "degree_boxplot_data.tsv", key="dl_deg_boxplot_tsv_tab1")
-                with col2_bp: st.download_button("Plot (PNG)", convert_fig_to_png(fig_degree_boxplot), "degree_boxplot.png", key="dl_deg_boxplot_png_tab1")
+                with col2_bp: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_degree_boxplot), "degree_boxplot.png", key="dl_deg_boxplot_png_tab1")
             else: st.warning("Could not generate data for the degree distribution box plot.")
             
             st.markdown("#### Degree Standard Deviation (DSD) Plot")
@@ -639,7 +640,7 @@ with tab1:
             if formatted_labels: fig_dsd.add_shape(type='rect', x0=formatted_labels[0], x1=formatted_labels[-1], y0=-0.5, y1=0.5, fillcolor='lightgrey', opacity=0.5, layer='below', line_width=0); fig_dsd.add_shape(type='rect', x0=formatted_labels[0], x1=formatted_labels[-1], y0=-1.0, y1=1.0, fillcolor='lightgrey', opacity=0.3, layer='below', line_width=0)
             fig_dsd.update_layout(title='Degree Standard Deviation (DSD)', height=500); st.plotly_chart(fig_dsd, use_container_width=True)
             st.session_state.report_elements.append({"type": "plot", "fig": fig_dsd, "title": "Degree Standard Deviation (DSD)", "caption": caption_dsd, "part": 1})
-            st.download_button("Download DSD Plot (PNG)", convert_fig_to_png(fig_dsd), "dsd_plot.png", key="dl_dsd_png_tab1")
+            st.download_button("Download DSD Plot (PNG)", partial(convert_fig_to_png, fig_dsd), "dsd_plot.png", key="dl_dsd_png_tab1")
 
             st.markdown("#### Assortativity & Significance (Per Network)")
             assort_valid = [v for v in assortativity_values_tab1 if not np.isnan(v)] 
@@ -655,7 +656,7 @@ with tab1:
             st.session_state.report_elements.append({"type": "df_text", "df": df_assortativity_dl, "title": "Assortativity Data", "part": 1})
             col1_6, col2_6 = st.columns(2) 
             with col1_6: st.download_button("Data (TSV)", convert_df_to_tsv(df_assortativity_dl), "assortativity.tsv", key="dl_assort_tsv_tab1")
-            with col2_6: st.download_button("Plot (PNG)", convert_fig_to_png(fig_assortativity), "assortativity_plot.png", key="dl_assort_png_tab1")
+            with col2_6: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_assortativity), "assortativity_plot.png", key="dl_assort_png_tab1")
             
             st.markdown("#### Significance Plots (Across All Networks)")
             col_sig1, col_sig2 = st.columns(2)
@@ -682,7 +683,7 @@ with tab1:
                     st.session_state.report_elements.append({"type": "df_text", "df": df_significance_paired_t, "title": "Paired T-Test Data", "part": 1})
                     dl_c1_sub_7, dl_c2_sub_7 = st.columns(2) 
                     with dl_c1_sub_7: st.download_button("Data (TSV)", convert_df_to_tsv(df_significance_paired_t), "residue_significance_paired_t.tsv", key="dl_paired_t_tsv_tab1")
-                    with dl_c2_sub_7: st.download_button("Plot (PNG)", convert_fig_to_png(fig_pvalues_paired), "paired_t_test_plot.png", key="dl_paired_t_png_tab1")
+                    with dl_c2_sub_7: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_pvalues_paired), "paired_t_test_plot.png", key="dl_paired_t_png_tab1")
                 else: st.warning("Need >1 network.")
             with col_sig2:
                 caption_chi2_var = "Tests if a residue's degree variation *within itself* across networks is significantly different from a random (Poisson) process. Low p-values suggest non-random variation."
@@ -702,7 +703,7 @@ with tab1:
                     st.session_state.report_elements.append({"type": "df_text", "df": df_variation_pvals_dl, "title": "Degree Variation P-Value Data", "part": 1})
                     dl_c1_sub_8, dl_c2_sub_8 = st.columns(2) 
                     with dl_c1_sub_8: st.download_button("Data (TSV)", convert_df_to_tsv(df_variation_pvals_dl), "degree_variation_significance.tsv", key="dl_chi2_var_tsv_tab1")
-                    with dl_c2_sub_8: st.download_button("Plot (PNG)", convert_fig_to_png(fig_var_pvals), "degree_variation_plot.png", key="dl_chi2_var_png_tab1")
+                    with dl_c2_sub_8: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_var_pvals), "degree_variation_plot.png", key="dl_chi2_var_png_tab1")
                 else: st.warning("Need >1 network.")
 
             st.markdown("#### Network Complexity Analysis (Per Selected Network)")
@@ -762,7 +763,7 @@ with tab1:
                                     st.session_state.report_elements.append({"type": "df_text", "df": df_degree_dist_dl, "title": f"Degree_Distribution_Data_{selected_graph_name_complex}", "part": 1})
                                     dl_c1_sub_9, dl_c2_sub_9 = st.columns(2)
                                     with dl_c1_sub_9: st.download_button(f"Data (TSV)", convert_df_to_tsv(df_degree_dist_dl), f"degree_dist_{selected_graph_name_complex}.tsv", key=f"dl_deg_dist_tsv_sel_{selected_graph_name_complex.replace('.', '_')}")
-                                    with dl_c2_sub_9: st.download_button(f"Scatter Plot (PNG)", convert_fig_to_png(fig_deg_dist_scatter), f"degree_dist_scatter_{selected_graph_name_complex}_plot.png", key=f"dl_deg_dist_png_sel_scatter_{selected_graph_name_complex.replace('.', '_')}")
+                                    with dl_c2_sub_9: st.download_button(f"Scatter Plot (PNG)", partial(convert_fig_to_png, fig_deg_dist_scatter), f"degree_dist_scatter_{selected_graph_name_complex}_plot.png", key=f"dl_deg_dist_png_sel_scatter_{selected_graph_name_complex.replace('.', '_')}")
                             else: st.write("Graph empty.")
                         except ValueError: st.error(f"Could not find selected graph '{selected_graph_name_complex}'.")
                         except IndexError: st.error(f"Index error for graph '{selected_graph_name_complex}'.")
@@ -797,7 +798,7 @@ with tab1:
                 st.session_state.report_elements.append({"type": "df_text", "df": df_agg_deg_dist, "title": "Aggregated_Degree_Distribution_Data", "part": 1})
                 col1_agg_dd, col2_agg_dd = st.columns(2)
                 with col1_agg_dd: st.download_button("Data (TSV)", convert_df_to_tsv(df_agg_deg_dist), "aggregated_degree_distribution.tsv", key="dl_agg_deg_dist_tsv")
-                with col2_agg_dd: st.download_button("Plot (PNG)", convert_fig_to_png(fig_agg_deg_dist), "aggregated_degree_distribution_plot.png", key="dl_agg_deg_dist_png")
+                with col2_agg_dd: st.download_button("Plot (PNG)", partial(convert_fig_to_png, fig_agg_deg_dist), "aggregated_degree_distribution_plot.png", key="dl_agg_deg_dist_png")
             else: st.warning("No data available for aggregated degree distribution plot.")
         elif valid_dfs_for_processing_tab1 and not all_nodes_set_tab1: st.warning("Dataframes loaded, but no nodes extracted.")
         elif not edge_dataframes: st.info("Upload .edges.txt files or use examples (sidebar) for Part 1.")
@@ -857,7 +858,7 @@ with tab2:
                                     st.session_state.report_elements.append({"type": "df_text", "df": stats_df_for_plot, "title": f"{category_name}_Interaction_Data", "part": 2})
                                     dl_c1_sub, dl_c2_sub = st.columns(2); 
                                     with dl_c1_sub: st.download_button(f"Data (TSV)", convert_df_to_tsv(stats_df_for_plot), f"interaction_{category_name}_counts.tsv",key=f"dl_int_tsv_{category_name}_tab2")
-                                    with dl_c2_sub: st.download_button(f"Plot (PNG)", convert_fig_to_png(figInt), f"interaction_{category_name}_plot.png", key=f"dl_int_png_{category_name}_tab2")
+                                    with dl_c2_sub: st.download_button(f"Plot (PNG)", partial(convert_fig_to_png, figInt), f"interaction_{category_name}_plot.png", key=f"dl_int_png_{category_name}_tab2")
     else: st.info("Upload .edges.txt files (sidebar) with 'Interaction'/'NodeId1' columns for Part 2.")
 
 with tab3: 
@@ -886,7 +887,7 @@ with tab3:
                 st.session_state.report_elements.append({"type": "df_text", "df": classification_counts.reset_index(), "title": "AlphaMissense_Classification_Counts_Data", "part": 3})
                 col1_am1, col2_am1 = st.columns(2); 
                 with col1_am1:st.download_button("Data (TSV)", convert_df_to_tsv(classification_counts.reset_index()),"AM_classification_counts.tsv",key="dl_am_class_tsv_tab3")
-                with col2_am1:st.download_button("Plot (PNG)",convert_fig_to_png(figAM1),"AM_classification_plot.png",key="dl_am_class_png_tab3")
+                with col2_am1:st.download_button("Plot (PNG)",partial(convert_fig_to_png, figAM1),"AM_classification_plot.png",key="dl_am_class_png_tab3")
 
                 caption_am_score = "Distribution of AlphaMissense pathogenicity scores for mutations at each residue position. Higher scores indicate higher likelihood of pathogenicity."
                 st.markdown("#### AlphaMissense Score Distribution"); st.caption(caption_am_score)
@@ -898,7 +899,7 @@ with tab3:
                 st.session_state.report_elements.append({"type": "df_text", "df": am_df_final[['ProteinID', 'Mutation', 'Position', 'AM_Score', 'AM_Classification']], "title": "AlphaMissense_Full_Data", "part": 3})
                 col1_am2, col2_am2 = st.columns(2); 
                 with col1_am2:st.download_button("Data (TSV)",convert_df_to_tsv(am_df_final[['ProteinID','Mutation','Position','AM_Score','AM_Classification']]),"AlphaMissense_data.tsv",key="dl_am_full_tsv_tab3")
-                with col2_am2:st.download_button("Plot (PNG)",convert_fig_to_png(figAM2),"AlphaMissense_score_plot.png",key="dl_am_full_png_tab3")
+                with col2_am2:st.download_button("Plot (PNG)",partial(convert_fig_to_png, figAM2),"AlphaMissense_score_plot.png",key="dl_am_full_png_tab3")
         except Exception as e: st.error(f"Error processing AM file: {e}. Check format.")
     elif uniprot_id_input or uploaded_file_am or use_example_file_am : st.warning("Could not load/process AM data. Check input (sidebar).")
     else: st.info("Enter UniProt ID, upload AM file, or use example (sidebar) for Part 3.")

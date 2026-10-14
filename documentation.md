@@ -84,17 +84,17 @@ The application was developed by the [EvoMol-Lab](https://github.com/evomol-lab)
 To run SlytheRINs locally, you will need Python 3.x and the following packages:
 
 ```
-streamlit
+streamlit>=1.52.0
 pandas
 networkx
-plotly
+plotly>=6.1.0
 scipy==1.15.3
 numpy
 matplotlib
 requests
 fpdf2
 statsmodels
-kaleido==0.2.1
+kaleido>=1.0.0
 ```
 
 You can install these packages using `pip`:
@@ -314,7 +314,7 @@ For most generated plots and data tables, SlytheRINs provides download options:
 
 ##  <a name='TroubleshootingNotes'></a>8. Troubleshooting/Notes
 
-- **PNG Export Failure:** If PNG downloads fail, ensure the kaleido package is correctly installed in your Python environment (pip install kaleido).
+- **PNG Export Failure:** If PNG downloads fail, ensure kaleido 1.0 or newer is installed (`pip install --upgrade "kaleido>=1"`). Kaleido 1.x also needs Google Chrome or Chromium on the machine; if neither is installed, run `plotly_get_chrome` to download a copy.
 
 - **PDF Generation Issues / Unicode Errors:**
   

@@ -3,11 +3,14 @@
 # SlytheRINs: A tool for analyzing and comparing protein Residue Interaction Networks (RINs)
 [https://doi.org/10.64898/2026.02.26.708270](https://doi.org/10.64898/2026.02.26.708270)
 
-Laura Bradaschia Shimohara<sup>1</sup>, Matheus Assunção<sup>2</sup>, Marília V. A. de Almeida<sup>1</sup>, Ândrea Kelly Ribeiro dos Santos<sup>2</sup> and João Paulo M. S. Lima<sup>1</sup>.
+Laura Bradaschia Shimohara<sup>1</sup>, Matheus Epífane de Assunção<sup>2</sup>, Marília V. A. de Almeida<sup>1</sup>, Ândrea Kelly Ribeiro dos Santos<sup>2,3</sup>, Umberto Laino Fulco<sup>4</sup>, Ivanovitch Silva<sup>5</sup>, Gustavo Antônio de Souza<sup>1,6</sup>, Diego Marques Coelho<sup>6</sup>, Gilderlanio Santana de Araújo<sup>2,3</sup> and João Paulo M. S. Lima<sup>1,6</sup>.
 
-<sup>1</sup>Bioinformatics Multidisciplinary Environment - BioME. Universidade Federal do Rio Grande do Norte (UFRN), Natal, RN, Brazil. 
-
-<sup>2</sup>Universidade Federal do Pará (UFPA).
+<sup>1</sup>Programa de Pós-graduação em Bioinformática (PPg-Bioinfo), Instituto Metrópole Digital (IMD), Universidade Federal do Rio Grande do Norte (UFRN), Natal, RN, 59078-900, Brazil.
+<sup>2</sup>Programa de Pós-graduação em Genética e Biologia Molecular (PPGBM), Instituto de Ciências Biológicas (ICB), Universidade Federal do Pará (UFPA). Laboratório de Genética Humana e Médica (LGHM), ICB, UFPA.
+<sup>3</sup>Programa de Pós-graduação em Genética e Biologia Molecular (PPGBM), Instituto de Ciências Biológicas (ICB), Universidade Federal do Pará (UFPA). Laboratório de Bioinformática e Ciências de Dados (LBCD), ICB, UFPA.
+<sup>4</sup>Departamento de Biofísica e Farmacologia, Universidade Federal do Rio Grande do Norte, 59072-970 Natal-RN, Brazil.
+<sup>5</sup>Department of Computer Engineering and Automation. Federal University of Rio Grande do Norte (UFRN).
+<sup>6</sup>Bioinformatics Multidisciplinary Environment (BioME), Digital Metropolis Institute (IMD), Universidade Federal do Rio Grande do Norte (UFRN), Natal, RN, 59078-900, Brazil.
 
 # Application Documentation
 
@@ -26,7 +29,7 @@ Laura Bradaschia Shimohara<sup>1</sup>, Matheus Assunção<sup>2</sup>, Marília
 - [7. Output/Downloads](#OutputDownloads)
 - [8. Troubleshooting/Notes](#TroubleshootingNotes)
 - [9. Citation/Contact (Example)](#CitationContactExample)
-- [10. Disclaimer](#Disclaimer)
+- [10. Disclosures](#Disclosure)
 
 <!-- vscode-markdown-toc-config
     numbering=true
@@ -84,22 +87,20 @@ The application was developed by the [EvoMol-Lab](https://github.com/evomol-lab)
 
 ## <a name='RequirementsInstallation'></a>3. Requirements & Installation
 
-You can use docker by:
+You can use Docker, with the image published on Docker Hub ([evomol/slytherins](https://hub.docker.com/r/evomol/slytherins)):
 
-```{sh}
-# build
-docker build -t slytherins .
-
-# run
-docker run -p 8501:8501 slytherins
-
-## Then open:
-http://localhost:8501
-
-# OR builded version:
-docker run -p 8501:8501 diegomscoelho/slytherins
-
+```sh
+docker run --rm -p 8501:8501 evomol/slytherins
 ```
+
+Or build the image from this repository:
+
+```sh
+docker build -t evomol/slytherins .
+docker run --rm -p 8501:8501 evomol/slytherins
+```
+
+Then open http://localhost:8501 in your browser.
 
 To run SlytheRINs locally, you will need Python 3.x and the following packages:
 
@@ -329,7 +330,7 @@ For most generated plots and data tables, SlytheRINs provides download options:
 
 ##  <a name='TroubleshootingNotes'></a>8. Troubleshooting/Notes
 
-- **PNG Export Failure:** If PNG downloads fail, ensure the kaleido package is correctly installed in your Python environment (pip install kaleido).
+- **PNG Export Failure:** If PNG downloads fail, ensure kaleido 1.0 or newer is installed (`pip install --upgrade "kaleido>=1"`). Kaleido 1.x also needs Google Chrome or Chromium on the machine; if neither is installed, run `plotly_get_chrome` to download a copy.
 
 - **PDF Generation Issues / Unicode Errors:**
   

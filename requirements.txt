@@ -1,11 +1,11 @@
-streamlit
+streamlit>=1.52.0
 pandas
 networkx
-plotly
+plotly>=6.1.0
 scipy==1.15.3
 numpy
 matplotlib
 requests
 fpdf2
 statsmodels
-kaleido==0.2.1
+kaleido>=1.0.0
